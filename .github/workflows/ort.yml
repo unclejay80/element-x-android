@@ -31,9 +31,9 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Download and extract ORT CLI
+      - name: Download and extract ORT CLI  
         run: |
-          curl -sSLO https://github.com/oss-review-toolkit/ort/releases/download/v${ORT_VERSION}/ort-${ORT_VERSION}.tgz
+          curl -sSLO https://github.com/oss-review-toolkit/ort/releases/download/${ORT_VERSION}/ort-${ORT_VERSION}.tgz
           tar -xzf ort-${ORT_VERSION}.tgz
           echo "$PWD/ort-${ORT_VERSION}/bin" >> $GITHUB_PATH
 
