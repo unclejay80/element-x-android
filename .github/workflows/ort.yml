@@ -52,13 +52,13 @@ jobs:
             -f CycloneDx,WebApp
 
       - name: Upload ORT HTML report
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: ort-html-report
           path: ort-report/report-web-app.html
 
       - name: Upload CycloneDX SBOM
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: ort-cyclonedx-sbom
           path: ort-report/report-cyclonedx.json
