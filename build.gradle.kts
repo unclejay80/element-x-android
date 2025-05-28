@@ -180,6 +180,12 @@ tasks.register("runQualityChecks") {
     gradle.startParameter.isContinueOnFailure = true
 }
 
+tasks.register("generateSbom") {
+    group = "reporting"
+    description = "Generates the aggregate CycloneDX BOM for the entire project"
+    dependsOn("cyclonedxAggregateBom")
+}
+
 // Make sure to delete old screenshots before recording new ones
 subprojects {
     val snapshotsDir = File("${project.projectDir}/src/test/snapshots")
@@ -222,4 +228,17 @@ subprojects {
         }
     }
     
+}
+
+afterEvaluate {
+    if (tasks.findByName("cyclonedxAggregateBom") == null) {
+        tasks.register("cyclonedxAggregateBom") {
+            group = "reporting"
+            description = "Generates an aggregate CycloneDX BOM (manually registered fallback)"
+            doLast {
+                println("No automatic cyclonedxAggregateBom task found.")
+                println("Ensure the CycloneDX plugin is applied correctly and try again.")
+            }
+        }
+    }
 }

@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-gradle
 
       - name: Generate aggregate SBOM
-        run: ./gradlew cyclonedxAggregateBom -Dcyclonedx.configurations=runtimeClasspath
+        run: ./gradlew generateSbom -Dcyclonedx.configurations=runtimeClasspath
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
