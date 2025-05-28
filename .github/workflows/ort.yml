@@ -1,49 +1,41 @@
-name: OSS Review Toolkit (ORT)
+name: ORT Analysis
 
 on:
   push:
-    branches: [main, feature/sbom]
+  pull_request:
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   ort:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Get current repository and branch
+        id: vars
+        run: |
+          echo "REPO_URL=https://github.com/${{ github.repository }}.git" >> $GITHUB_OUTPUT
+          echo "REVISION=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Run ORT Analysis
+        uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
-          distribution: 'temurin'
-          java-version: 17
+          vcs-url: ${{ steps.vars.outputs.REPO_URL }}
+          vcs-type: Git
+          vcs-revision: ${{ steps.vars.outputs.REVISION }}
+          ort-cli-args: 'analyze -f CycloneDX -o ort-results'
 
-      - name: Download ORT CLI
+      - name: Generate HTML Report
         run: |
-          curl -sSLo ort-cli.jar https://github.com/oss-review-toolkit/ort/releases/latest/download/cli.jar
-
-      - name: Run ORT analyzer
-        run: |
-          java -jar ort-cli.jar analyze \
-            -f JSON \
-            -i . \
-            -o ort-results \
-            --allow-dynamic-versions
-
-      - name: Run ORT reporter
-        run: |
-          java -jar ort-cli.jar report \
+          java -jar ort/cli/build/libs/ort-cli-*-fat.jar report \
+            -i ort-results/analyzer-result.yml \
             -f WebApp \
-            -i ort-results/analyzer-result.json \
             -o ort-report
 
-      - name: Upload ORT HTML report
+      - name: Upload ORT HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: ort-report
-          path: ort-report/*
-
+          path: ort-report/index.html
