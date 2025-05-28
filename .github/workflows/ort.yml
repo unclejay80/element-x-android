@@ -1,0 +1,49 @@
+name: OSS Review Toolkit (ORT)
+
+on:
+  push:
+    branches: [main, feature/sbom]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ort:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Download ORT CLI
+        run: |
+          curl -sSLo ort-cli.jar https://github.com/oss-review-toolkit/ort/releases/latest/download/cli.jar
+
+      - name: Run ORT analyzer
+        run: |
+          java -jar ort-cli.jar analyze \
+            -f JSON \
+            -i . \
+            -o ort-results \
+            --allow-dynamic-versions
+
+      - name: Run ORT reporter
+        run: |
+          java -jar ort-cli.jar report \
+            -f WebApp \
+            -i ort-results/analyzer-result.json \
+            -o ort-report
+
+      - name: Upload ORT HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ort-report
+          path: ort-report/*
+
