@@ -15,6 +15,7 @@ buildscript {
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     id("io.element.android-root")
+    id("org.cyclonedx.bom") version "2.3.1"
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.android) apply false
@@ -195,6 +196,16 @@ subprojects {
 }
 
 subprojects {
+
+    apply(plugin = "org.cyclonedx.bom")
+
+    configure<org.cyclonedx.gradle.CycloneDxExtension> {
+        includeConfigs.set(listOf("runtimeClasspath"))
+        schemaVersion.set("1.6")
+        projectType.set("library")
+        destination.set(file("$buildDir/reports"))
+    }
+
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
             if (project.findProperty("composeCompilerReports") == "true") {
@@ -217,4 +228,12 @@ subprojects {
             }
         }
     }
+    
+}
+
+cyclonedxBom {
+    includeConfigs.set(listOf("runtimeClasspath"))
+    schemaVersion.set("1.6")
+    projectType.set("application")
+    destination.set(file("build/reports"))
 }
