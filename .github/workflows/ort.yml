@@ -32,8 +32,8 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Submit dependency graph to GitHub
-        uses: gradle/actions/dependency-submission@v3
+#      - name: Submit dependency graph to GitHub
+#        uses: gradle/actions/dependency-submission@v3
 
       - name: Download ORT CLI
         run: |
