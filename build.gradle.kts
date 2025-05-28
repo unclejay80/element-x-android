@@ -180,10 +180,6 @@ tasks.register("runQualityChecks") {
     gradle.startParameter.isContinueOnFailure = true
 }
 
-tasks.register("generateAggregateSbom") {
-    dependsOn("cyclonedxAggregateBom")
-}
-
 // Make sure to delete old screenshots before recording new ones
 subprojects {
     val snapshotsDir = File("${project.projectDir}/src/test/snapshots")
