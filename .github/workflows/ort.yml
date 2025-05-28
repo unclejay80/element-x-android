@@ -15,7 +15,6 @@ permissions:
   actions: read
   packages: read
   security-events: write
-  dependencies: write  # 👈 wichtig für den Graph Upload
 
 jobs:
   ort-analyze:
