@@ -41,8 +41,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle
 
-      - name: Generate SBOM with CycloneDX
-        run: ./gradlew cyclonedxBom
+      - name: Generate SBOM for all modules
+        run: ./gradlew cyclonedxAggregateBom -Dcyclonedx.configurations=runtimeClasspath
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
