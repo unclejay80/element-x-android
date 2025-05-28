@@ -1,4 +1,4 @@
-name: ORT SBOM & Dependency Graph
+name: ORT Analyze
 
 on:
   push:
@@ -7,61 +7,58 @@ on:
       - develop
       - feature/sbom
   pull_request:
-    branches:
-      - main
-      - develop
-      - feature/sbom
-  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  actions: read
+  packages: read
+  security-events: write
+  dependencies: write  # 👈 wichtig für den Graph Upload
 
 jobs:
-  ort:
-    name: Run OSS Review Toolkit
+  ort-analyze:
     runs-on: ubuntu-latest
 
-    env:
-      ORT_VERSION: 59.3.0
-
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Set up Java (same as Android project)
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 21
 
-      - name: Download and extract ORT CLI  
-        run: |
-          curl -sSLO https://github.com/oss-review-toolkit/ort/releases/download/${ORT_VERSION}/ort-${ORT_VERSION}.tgz
-          tar -xzf ort-${ORT_VERSION}.tgz
-          echo "$PWD/ort-${ORT_VERSION}/bin" >> $GITHUB_PATH
+      - name: Submit dependency graph to GitHub
+        uses: gradle/actions/dependency-submission@v3
 
-      - name: Run ORT analyzer
+      - name: Download ORT CLI
         run: |
-          ort analyze -i . -o ort-results \
-            --vcs-url=https://github.com/${{ github.repository }}.git \
-            --vcs-revision=${{ github.sha }} \
-            --vcs-type=Git
+          ORT_VERSION=59.3.0
+          curl -sSLO https://github.com/oss-review-toolkit/ort/releases/download/${ORT_VERSION}/ort-${ORT_VERSION}.zip
+          unzip ort-${ORT_VERSION}.zip -d ort
+          echo "ORT_HOME=$(pwd)/ort/ort-${ORT_VERSION}" >> $GITHUB_ENV
+          echo "$(pwd)/ort/ort-${ORT_VERSION}/bin" >> $GITHUB_PATH
 
-      - name: Generate CycloneDX and HTML report
+      - name: Run ORT Analyze
+        run: |
+          ort analyze \
+            -i . \
+            -o ort-results
+
+      - name: Generate ORT HTML Report
         run: |
           ort report \
             -i ort-results/analyzer-result.yml \
             -o ort-report \
-            -f CycloneDx,WebApp
+            -f WebApp
 
-      - name: Upload ORT HTML report
+      - name: Upload ORT HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: ort-html-report
           path: ort-report/report-web-app.html
-
-      - name: Upload CycloneDX SBOM
-        uses: actions/upload-artifact@v4
-        with:
-          name: ort-cyclonedx-sbom
-          path: ort-report/report-cyclonedx.json
-
-      - name: Upload dependency graph to GitHub
-        uses: gradle/actions/dependency-submission@v3
