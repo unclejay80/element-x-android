@@ -230,6 +230,25 @@ subprojects {
     
 }
 
+tasks.register("printAllResolvableConfigurations") {
+    group = "reporting"
+    description = "Listet alle resolvable Konfigurationen aus allen Projekten auf."
+
+    doLast {
+        println("🔍 Alle resolvable Konfigurationen pro Projekt:")
+
+        rootProject.allprojects.forEach { project ->
+            println("\n📦 Projekt: ${project.path}")
+            project.configurations
+                .filter { it.isCanBeResolved }
+                .sortedBy { it.name }
+                .forEach { println("   → ${it.name}") }
+        }
+    }
+}
+
+
+
 afterEvaluate {
     if (tasks.findByName("cyclonedxAggregateBom") == null) {
         tasks.register("cyclonedxAggregateBom") {
